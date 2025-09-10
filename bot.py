@@ -3,7 +3,7 @@ import speedtest
 import os
 
 # قراءة التوكن من GitHub Secrets
-BOT_TOKEN = os.getenv("6669548638:AAHTn7VWenpMEqYHYHK6ULYPnWK0wvBfSY0")
+BOT_TOKEN = "6669548638:AAHTn7VWenpMEqYHYHK6ULYPnWK0wvBfSY0"
 bot = telebot.TeleBot(BOT_TOKEN)
 
 # أمر /start → يعمل اختبار سرعة
