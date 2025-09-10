@@ -1,40 +1,31 @@
-name: VPS
+name: Telegram Bot
+
 on:
-  workflow_dispatch:
+  workflow_dispatch:        # تشغيل يدوي
+  schedule:                 # تشغيل تلقائي
+    - cron: "0 */6 * * *"   # كل 6 ساعات
+
 jobs:
-  secure-vps:
+  run-bot:
     runs-on: ubuntu-latest
-    timeout-minutes: 360
+    timeout-minutes: 360    # يبقى شغال 6 ساعات
     steps:
-      - name: Install & Configure SSH
-        run: |
-          sudo apt update -y
-          sudo apt install -y openssh-server
-          sudo systemctl enable ssh
-          sudo systemctl start ssh
-          echo "root:admin@123" | sudo chpasswd
-          echo "PermitRootLogin yes" | sudo tee -a /etc/ssh/sshd_config
-          sudo service ssh restart
-          echo "✅ SSH user: root | pass: admin@123"
+      - name: Checkout repo
+        uses: actions/checkout@v3
 
-      - name: Install Tailscale
-        run: |
-          curl -fsSL https://tailscale.com/install.sh | sh
-          sudo tailscale up --authkey=${{ secrets.TAILSCALE_AUTH_KEY }} --hostname=vps-${{ github.run_id }}
-          tsIP=$(tailscale ip -4 | head -n 1)
-          echo "TAILSCALE_IP=$tsIP" >> $GITHUB_ENV
-          echo "✅ Tailscale IP: $tsIP"
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
 
-      - name: Verify SSH Access
+      - name: Install requirements
         run: |
-          echo "Tailscale VPS ready!"
-          echo "IP: $env:TAILSCALE_IP"
-          echo "User: root"
-          echo "Pass: admin@123"
+          python -m pip install --upgrade pip
+          pip install pytelegrambotapi speedtest-cli
 
-      - name: Keep VPS Alive
+      - name: Run Telegram Bot
+        env:
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
         run: |
-          while true; do
-            echo "[$(date)] VPS running..."
-            sleep 300
-          done
+          echo "✅ Starting Telegram bot..."
+          python bot.py
